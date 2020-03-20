@@ -850,11 +850,14 @@ NumericVector geom_weight(const NumericVector &pvalues, const NumericVector &wei
   // length of input vectors (equal)
   int len = pvalues.length();
   // results vector
-  NumericVector res = 1 - pvalues;
+  NumericVector res(len);
   // perform geometric weighting
-  std::transform(res.begin(), res.end(), weights.begin(), res.begin(), ::pow);
-  res = 1 - res;
+  ////// does not work on older compilers (e.g. win_oldrelease)
+  //std::transform(res.begin(), res.end(), weights.begin(), res.begin(), [](double x, double a){return std::pow(x, a);});
+  //res = 1 - res;
+  //////
   for(int i = 0; i < len; i++){
+    res[i] = 1 - std::pow(1 - pvalues[i], weights[i]);
     // was the i-th value rounded off to zero?
     if(res[i] <= 0) 
       // replace zero with first-order Taylor approximation
