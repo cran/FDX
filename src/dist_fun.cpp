@@ -2,12 +2,12 @@
 
 #include "dist_fun.h"
 
-NumericVector poibinom_int(NumericVector probs, int method, int max_q){
+NumericVector poibinom_int(NumericVector probs, int method, int max_q, bool lower_tail){
   // number of probabilities of success
   int n = probs.length();
   // vector of all probabilities
   NumericVector res;
-  if(max_q >= 0) res = NumericVector(std::min<int>(max_q, n) + 1); else res = NumericVector(n + 1);
+  if(max_q >= 0) res = NumericVector(std::min<int>(max_q, n) + 1, 1 - (double)lower_tail); else res = NumericVector(n + 1, 1 - (double)lower_tail);
   
   // actual size of results vector
   int size = res.length();
@@ -39,12 +39,12 @@ NumericVector poibinom_int(NumericVector probs, int method, int max_q){
   
   // if there are only zeros and ones, only one outcome is possible
   if(m == 0){
-    for(i = start; i < size; i++) res[i] = 1;
+    for(i = start; i < size; i++) res[i] = (double)lower_tail;
   }else{
     // if there is only one probability not equal to zero or one, it is a Bernoulli distribution
     if(m == 1){
-      res[start] = 1 - probs_reduced[0];
-      for(i = start + 1; i < size; i++) res[i] = 1;
+      if(lower_tail) res[start] = 1 - probs_reduced[0]; else res[start] = probs_reduced[0];
+      for(i = start + 1; i < size; i++) res[i] = (double)lower_tail;
     }else{
       // if all remaining probabilities are equal, it is a Binomial distribution
       bool equal = true;
@@ -58,16 +58,16 @@ NumericVector poibinom_int(NumericVector probs, int method, int max_q){
       IntegerVector obs(Range(0, end - start));
       // compute probabilites of relevant observations
       if(equal){
-        res[range] = pbinom(obs, (double)m, probs_reduced[0]);
+        res[range] = pbinom(obs, (double)m, probs_reduced[0], lower_tail);
       }else{
         switch(method){
           //case 0: res[range] = ppb_conv(obs, probs_reduced); break;
-          case 0: res[range] = ppb_na(obs, probs_reduced, true); break;
-          case 1: res[range] = ppb_dc(obs, probs_reduced); break;
-          case 2: res[range] = ppb_gmba(obs, probs_reduced, true); break;
+          case 0: res[range] = ppb_na(obs, probs_reduced, true, lower_tail); break;
+          case 1: res[range] = ppb_dc(obs, probs_reduced, lower_tail); break;
+          case 2: res[range] = ppb_gmba(obs, probs_reduced, true, lower_tail); break;
         }
       }
-      for(i = end + 1; i < size; i++) res[i] = 1;
+      for(i = end + 1; i < size; i++) res[i] = (double)lower_tail;
     }
   }
   
@@ -100,9 +100,8 @@ NumericVector ppbinom(IntegerVector obs, NumericVector probs, int method, bool l
   // largest quantile (last element, because 'obs' is sorted in ascending order)
   int max_q = std::max<int>(0, obs[obs.length() - 1]);
   // vector of results;
-  NumericVector res = poibinom_int(probs, method, max_q);
+  NumericVector res = poibinom_int(probs, method, max_q, lower_tail);
+  
   // return results
-  res = res[obs];
-  if(lower_tail) return res;
-  else return NumericVector(1 - res);
+  return res[obs];
 }

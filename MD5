@@ -1,6 +1,6 @@
-f629d3d309f6f3b97fe9eeaf97aa3074 *DESCRIPTION
+245b2481d3858c6b7413c14835914e32 *DESCRIPTION
 2fcd4a58e31455c1e36cbf619b75680c *NAMESPACE
-d503d98a3a9227c093c177c3937976e2 *NEWS.md
+75b6175b80f55b3c479af6f8973f1268 *NEWS.md
 6740e851c0a35709cf7fc48487a3d461 *R/FDX.R
 3ddd1b8b82bde349fea62c6c29302db1 *R/RcppExports.R
 761460643d42deb475ce961a2430f608 *R/amnesia.R
@@ -36,6 +36,6 @@ a6bfd8ed8e7b4a10f048e943d0b6925a *man/print.FDX.Rd
 75f76cd54342abc62f87da674dd06d2c *man/weighted.LR.Rd
 99a5ee13a196c7d68c8a9a643deeac39 *man/weighted.PB.Rd
 70724b55ce37d99667081288c23b0799 *src/RcppExports.cpp
-99bebd30a2ba079d295b981311a24cb6 *src/dist_fun.cpp
-bf5f4646d2f6bedf9f2f84d1b4d53f1c *src/dist_fun.h
+408135c436a6f43b68366644368e6539 *src/dist_fun.cpp
+0b339330b146664635ee75315c9bc5bc *src/dist_fun.h
 ca13aefa1a640199f8791e4a87475387 *src/kernel_fun.cpp
