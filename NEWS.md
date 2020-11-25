@@ -1,3 +1,7 @@
+# FDX 1.0.3
+* Necessary updates due to changed signatures of imported functions of package
+  PoissonBinomial
+
 # FDX 1.0.2
 * Minor improvements to internal functions to achieve better accuracy for upper
   tail Poisson binomial probabilities.

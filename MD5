@@ -1,6 +1,6 @@
-245b2481d3858c6b7413c14835914e32 *DESCRIPTION
+b5baf454741b36593d8ac484ceb0b140 *DESCRIPTION
 2fcd4a58e31455c1e36cbf619b75680c *NAMESPACE
-75b6175b80f55b3c479af6f8973f1268 *NEWS.md
+fc9cd0101b836ffcea4f2d946506f479 *NEWS.md
 6740e851c0a35709cf7fc48487a3d461 *R/FDX.R
 3ddd1b8b82bde349fea62c6c29302db1 *R/RcppExports.R
 761460643d42deb475ce961a2430f608 *R/amnesia.R
@@ -14,9 +14,9 @@ de08df6bc8ab7e3458b5ee50e3808c15 *R/onUnload.R
 dfd8c41d1d05460ef4c70e4ebe8c5f57 *R/plot_funs.R
 df75ede6e1e94ee2b4fc353a2922cbd5 *R/print_fun.R
 37a35362fb3b9398ad35c6a982ff23d2 *R/summary_funs.R
-1b215fae96f8c56b281543bdecc71f17 *R/weightedGR_fun.R
-5614bf460b7e4b11c8f257b334d0b355 *R/weightedLR_fun.R
-8510a8720bd31a1ba122fbc38b1cb49b *R/weightedPB_fun.R
+077cb618399fb2a5c7a79b880800f48d *R/weightedGR_fun.R
+0526224b5dd72b02aeef5853ab5cd03f *R/weightedLR_fun.R
+e8fa85a91a7b2a7d26e45804ba61a23c *R/weightedPB_fun.R
 55901061ac3e335c0dc50908131b513a *data/amnesia.rda
 8ae1f2fe5fc0b6448213347074cd04b5 *man/FDX-package.Rd
 3f94c447fef1713bf0ea9b6c1b66b531 *man/amnesia.Rd

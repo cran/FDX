@@ -92,7 +92,7 @@ weighted.LR <- function(raw.pvalues, weights, alpha = 0.05, zeta = 0.5, weightin
   #--------------------------------------------
   #       Rescale weights
   #--------------------------------------------
-  weights.rescaled <- weights.ok / mean(weights)
+  weights.rescaled <- weights.ok / mean(weights.ok)
   weights.decreasing <- sort(weights.rescaled, decreasing = TRUE)
   #--------------------------------------------
   #       Compute weighted p-values
