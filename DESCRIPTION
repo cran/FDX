@@ -2,8 +2,8 @@ Package: FDX
 Type: Package
 Title: False Discovery Exceedance Controlling Multiple Testing
         Procedures
-Version: 1.0.4
-Date: 2022-01-19
+Version: 1.0.5
+Date: 2022-10-14
 Authors@R: c(person("Sebastian", "Döhler", role = "aut"), person("Florian","Junge", role = c("aut", "cre"), email = "florian.junge@h-da.de"), person("Etienne", "Roquain", role = "ctb"))
 Maintainer: Florian Junge <florian.junge@h-da.de>
 Language: en-US
@@ -13,13 +13,13 @@ Encoding: UTF-8
 Depends: R (>= 3.00), DiscreteFDR
 Imports: Rcpp (>= 1.0.3), methods, PoissonBinomial (>= 1.2.0), pracma
 LinkingTo: Rcpp, PoissonBinomial
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 URL: https://github.com/DISOhda/FDX
 BugReports: https://github.com/DISOhda/FDX/issues
 NeedsCompilation: yes
-Packaged: 2022-01-19 15:52:41 UTC; fjunge
+Packaged: 2022-10-14 14:11:09 UTC; fjunge
 Author: Sebastian Döhler [aut],
   Florian Junge [aut, cre],
   Etienne Roquain [ctb]
 Repository: CRAN
-Date/Publication: 2022-01-19 16:22:53 UTC
+Date/Publication: 2022-10-16 13:45:17 UTC
