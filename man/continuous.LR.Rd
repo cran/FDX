@@ -7,45 +7,67 @@
 \title{Continuous Lehmann-Romano procedure}
 \usage{
 continuous.LR(
-  raw.pvalues,
+  test.results,
   alpha = 0.05,
   zeta = 0.5,
   adaptive = TRUE,
-  critical.values = FALSE
+  critical.values = FALSE,
+  select.threshold = 1
 )
 
-LR(raw.pvalues, alpha = 0.05, zeta = 0.5, critical.values = FALSE)
+LR(
+  test.results,
+  alpha = 0.05,
+  zeta = 0.5,
+  critical.values = FALSE,
+  select.threshold = 1
+)
 
-NLR(raw.pvalues, alpha = 0.05, zeta = 0.5, critical.values = FALSE)
+NLR(
+  test.results,
+  alpha = 0.05,
+  zeta = 0.5,
+  critical.values = FALSE,
+  select.threshold = 1
+)
 }
 \arguments{
-\item{raw.pvalues}{vector of the raw observed p-values, as provided by the end user and before matching with their nearest neighbor in the CDFs supports.}
+\item{test.results}{either a numeric vector with p-values or an R6 object of class \code{\link[DiscreteTests]{DiscreteTestResults}} from package \code{\link[DiscreteTests:DiscreteTests-package]{DiscreteTests}} for which a discrete FDR procedure is to be performed.}
 
-\item{alpha}{the target FDP, a number strictly between 0 and 1. For \code{*.fast} kernels, it is only necessary, if \code{stepUp = TRUE}.}
+\item{alpha}{single real number strictly between 0 and 1 specifying the target FDP.}
 
-\item{zeta}{the target probability of not exceeding the desired FDP, a number strictly between 0 and 1. If \code{zeta=NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
+\item{zeta}{single real number strictly between 0 and 1 specifying the target probability of not exceeding the desired FDP. If \code{zeta = NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
 
-\item{adaptive}{a boolean specifying whether to conduct an adaptive procedure or not.}
+\item{adaptive}{single boolean indicating whether to conduct an adaptive procedure or not.}
 
-\item{critical.values}{a boolean. If \code{TRUE}, critical constants are computed and returned (this is computationally intensive).}
+\item{critical.values}{single boolean indicating whether critical constants are to be computed.}
+
+\item{select.threshold}{single real number strictly between 0 and 1 indicating the largest raw p-value to be considered, i.e. only p-values below this threshold are considered and the procedures are adjusted in order to take this selection effect into account; if \code{threshold = 1} (the default), all raw p-values are selected.}
 }
 \value{
 A \code{FDX} S3 class object whose elements are:
-\item{Rejected}{Rejected raw p-values.}
-\item{Indices}{Indices of rejected hypotheses.}
-\item{Num.rejected}{Number of rejections.}
-\item{Adjusted}{Adjusted p-values (only for step-down direction).}
+\item{Rejected}{rejected raw \eqn{p}-values.}
+\item{Indices}{indices of rejected \eqn{p}-values.}
+\item{Num.rejected}{number of rejections.}
 
-\item{Critical.values}{Critical values (if requested).}
-\item{Method}{A character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
-\item{FDP.threshold}{FDP threshold \code{alpha}.}
-\item{Exceedance.probability}{Probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence \code{1 - zeta}.}
-\item{Adaptive}{A boolean specifying whether an adaptive procedure was conducted or not.}
+\item{Adjusted}{adjusted \eqn{p}-values.}
+\item{Critical.values}{critical values (only exists if computations where performed with \code{critical.values = TRUE}).}
+\item{Select}{list with data related to \eqn{p}-value selection; only exists if \code{threshold < 1}.}
+\item{Select$Threshold}{\eqn{p}-value selection \code{threshold}.}
+\item{Select$Effective.Thresholds}{results of each \eqn{p}-value CDF evaluated at the selection threshold.}
+\item{Select$Pvalues}{selected \eqn{p}-values that are \eqn{\leq} selection \code{threshold}.}
+\item{Select$Indices}{indices of \eqn{p}-values \eqn{\leq} selection \code{threshold}.}
+\item{Select$Scaled}{scaled selected \eqn{p}-values.}
+\item{Select$Number}{number of selected \eqn{p}-values \eqn{\leq} \code{threshold}.}
+\item{Data}{list with input data.}
+\item{Data$Method}{character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
+\item{Data$Raw.pvalues}{all observed raw \eqn{p}-values.}
 
-\item{Data$raw.pvalues}{The values of \code{raw.pvalues}.}
+\item{Data$FDP.threshold}{FDP threshold \code{alpha}.}
+\item{Data$Exceedance.probability}{probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence 1 - \code{zeta}.}
+\item{Data$Adaptive}{boolean indicating whether an adaptive procedure was conducted or not.}
 
-
-\item{Data$data.name}{The respective variable names of \code{raw.pvalues} and \code{pCDFlist}.}
+\item{Data$Data.name}{the respective variable name(s) of the input data.}
 }
 \description{
 Apply the usual (continuous) [LR] procedure, with or without computing the
@@ -54,7 +76,7 @@ well.
 }
 \details{
 \code{LR} and \code{NLR} are wrapper functions for \code{continuous.LR}. The
-first one simply passes all its parameters to \code{continuous.LR} with
+first one simply passes all its arguments to \code{continuous.LR} with
 \code{adaptive = TRUE} and \code{NLR} does the same with
 \code{adaptive = FALSE}.
 }
@@ -68,28 +90,37 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
+# LR without critical values; using extracted p-values
 LR.fast <- LR(raw.pvalues)
 summary(LR.fast)
 
-LR.crit <- LR(raw.pvalues, critical.values = TRUE)
+# LR with critical values; using test results object
+LR.crit <- LR(test.results, critical.values = TRUE)
 summary(LR.crit)
 
-NLR.fast <- NLR(raw.pvalues)
+# Non-adaptive LR without critical values; using test results object
+NLR.fast <- NLR(test.results)
 summary(NLR.fast)
 
+# Non-adaptive LR with critical values; using extracted p-values
 NLR.crit <- NLR(raw.pvalues, critical.values = TRUE)
 summary(NLR.crit)
 
 }
+\references{
+Lehmann, E. L. & Romano, J. P. (2005). Generalizations of the familywise
+error rate. \emph{The Annals of Statistics}, \emph{33}(3), pp. 1138-1154.
+\doi{10.1214/009053605000000084}
+}
 \seealso{
-\code{\link{kernel}}, \code{\link{FDX-package}}, \code{\link{continuous.GR}},
-\code{\link{discrete.LR}}, \code{\link{discrete.GR}}, 
-\code{\link{discrete.PB}}, \code{\link{weighted.LR}}, 
-\code{\link{weighted.GR}}, \code{\link{weighted.PB}}
+\code{\link[=kernel]{kernel()}}, \code{\link[=FDX-package]{FDX}}, \code{\link[=continuous.GR]{continuous.GR()}},
+\code{\link[=discrete.LR]{discrete.LR()}}, \code{\link[=discrete.GR]{discrete.GR()}},
+\code{\link[=discrete.PB]{discrete.PB()}}, \code{\link[=weighted.LR]{weighted.LR()}},
+\code{\link[=weighted.GR]{weighted.GR()}}, \code{\link[=weighted.PB]{weighted.PB()}}
 }

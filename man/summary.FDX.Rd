@@ -10,32 +10,31 @@
 \method{print}{summary.FDX}(x, max = NULL, ...)
 }
 \arguments{
-\item{object}{an object of class "\code{FDX}".}
+\item{object}{object of class "\code{FDX}".}
 
 \item{...}{further arguments passed to or from other methods.}
 
-\item{x}{an object of class "\code{summary.FDX}".}
+\item{x}{object of class "\code{summary.FDX}".}
 
-\item{max}{numeric or \code{NULL}, specifying the maximal number of
-\emph{rows} of the p-value table to be printed. By
-default, when \code{NULL}, \code{getOption("max.print")}
-is used.}
+\item{max}{numeric or \code{NULL}, specifying the maximum number of
+\emph{rows} of the p-value table to be printed; if \code{NULL}
+(the default), \code{getOption("max.print")} is used.}
 }
 \value{
 \code{summary.FDX} computes and returns a list that includes all the
 data of an input \code{FDX}, plus
 \item{Table}{a \code{data.frame}, sorted by the raw p-values, that contains
-            the indices, that raw p-values themselves, their respective
-            critical values (if present), their adjusted p-values (if
-            present) and a logical column to indicate rejection.}
-            
+the indices, that raw p-values themselves, their respective
+critical values (if present), their adjusted p-values (if
+present) and a logical column to indicate rejection.}
+
 \code{print.summary.FDX} returns that object invisibly.
 }
 \description{
-\code{summary} method for class "\code{FDX}"
+\code{summary} method for class \code{FDX}
 }
 \details{
-\code{summary.FDX} objects include all data of an \code{FDX}
+\code{summary.FDX} objects include all data of an \code{FDX} class
 object, but also include an additional table which includes the raw p-values,
 their indices, the respective critical values (if present), the adjusted
 p-values (if present) and a logical column to indicate rejection. The table
@@ -54,14 +53,17 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
-DGR.crit <- DGR(raw.pvalues, pCDFlist, critical.values = TRUE)
+# DGR with critical values; using test results object
+DGR.crit <- DGR(test.results, critical.values = TRUE)
+# create summary
 DGR.crit.summary <- summary(DGR.crit)
+# print summary
 print(DGR.crit.summary)
 
 }

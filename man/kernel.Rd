@@ -4,64 +4,81 @@
 \alias{kernel}
 \alias{kernel_DLR_fast}
 \alias{kernel_DLR_crit}
+\alias{kernel_wLR_fast}
 \alias{kernel_DGR_fast}
 \alias{kernel_DGR_crit}
+\alias{kernel_wGR_fast}
 \alias{kernel_DPB_fast}
 \alias{kernel_DPB_crit}
-\alias{kernel_wLR_fast}
-\alias{kernel_wGR_fast}
 \alias{kernel_wPB_fast}
 \title{Kernel functions}
 \usage{
 kernel_DLR_fast(
   pCDFlist,
-  pvalues,
+  sorted_pv,
   adaptive = TRUE,
   alpha = 0.05,
   stepUp = FALSE,
   zeta = 0.5,
-  support = 0L
+  support = numeric(),
+  pCDFcounts = NULL
 )
 
 kernel_DLR_crit(
   pCDFlist,
-  pvalues,
+  support,
   sorted_pv,
   adaptive = TRUE,
   alpha = 0.05,
   zeta = 0.5,
-  stepUp = FALSE
+  stepUp = FALSE,
+  pCDFcounts = NULL
 )
 
-kernel_DGR_fast(pCDFlist, pvalues, adaptive = TRUE, alpha = 0.05)
+kernel_wLR_fast(sorted_w_pv, weights, alpha = 0.05, geom_weighting = FALSE)
+
+kernel_DGR_fast(
+  pCDFlist,
+  sorted_pv,
+  adaptive = TRUE,
+  alpha = 0.05,
+  pCDFcounts = NULL
+)
 
 kernel_DGR_crit(
   pCDFlist,
-  pvalues,
-  sorted_pv,
-  adaptive = TRUE,
-  alpha = 0.05,
-  zeta = 0.5
-)
-
-kernel_DPB_fast(pCDFlist, pvalues, adaptive = TRUE, alpha = 0.05, exact = TRUE)
-
-kernel_DPB_crit(
-  pCDFlist,
-  pvalues,
+  support,
   sorted_pv,
   adaptive = TRUE,
   alpha = 0.05,
   zeta = 0.5,
-  exact = TRUE
+  pCDFcounts = NULL
 )
 
-kernel_wLR_fast(qvalues, weights, alpha = 0.05, geom_weighting = FALSE)
+kernel_wGR_fast(sorted_w_pv, weights, alpha = 0.05, geom_weighting = FALSE)
 
-kernel_wGR_fast(qvalues, weights, alpha = 0.05, geom_weighting = FALSE)
+kernel_DPB_fast(
+  pCDFlist,
+  sorted_pv,
+  adaptive = TRUE,
+  alpha = 0.05,
+  exact = TRUE,
+  pCDFcounts = NULL
+)
+
+kernel_DPB_crit(
+  pCDFlist,
+  support,
+  sorted_pv,
+  adaptive = TRUE,
+  alpha = 0.05,
+  zeta = 0.5,
+  exact = TRUE,
+  pCDFcounts = NULL
+)
 
 kernel_wPB_fast(
-  qvalues,
+  sorted_w_pv,
   weights,
   alpha = 0.05,
   geom_weighting = FALSE,
@@ -69,46 +86,63 @@ kernel_wPB_fast(
 )
 }
 \arguments{
-\item{pCDFlist}{a list of the supports of the CDFs of the p-values. Each support is represented by a vector that must be in increasing order.}
+\item{pCDFlist}{list of the supports of the CDFs of the p-values; each list item must be a numeric vector, which is sorted in increasing order and whose last element equals 1.}
 
-\item{pvalues}{a numeric vector. Contains all values of the p-values supports if we search for the critical constants. If not, contains only the observed p-values. Must be sorted in increasing order!}
+\item{sorted_pv}{numeric vector containing the raw p-values, sorted
+in increasing order.}
 
-\item{adaptive}{a boolean specifying whether to conduct an adaptive procedure or not.}
+\item{adaptive}{single boolean indicating whether to conduct an adaptive procedure or not.}
 
-\item{alpha}{the target FDP, a number strictly between 0 and 1. For \code{*.fast} kernels, it is only necessary, if \code{stepUp = TRUE}.}
+\item{alpha}{single real number strictly between 0 and 1 specifying the target FDP.}
 
-\item{stepUp}{a numeric vector. Identical to \code{pvalues} for a step-down procedure. Equals \code{c.m} for a step-up procedure.}
+\item{stepUp}{single boolean specifying whether to conduct the
+step-up (\code{TRUE}) or step-down (\code{FALSE}; the
+default) version of the discrete Lehmann-Romano
+procedure.}
 
-\item{zeta}{the target probability of not exceeding the desired FDP, a number strictly between 0 and 1. If \code{zeta=NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
+\item{zeta}{single real number strictly between 0 and 1 specifying the target probability of not exceeding the desired FDP. If \code{zeta = NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
 
-\item{support}{a numeric vector. Contains all values of the p-values supports. Ignored, if \code{stepUp = FALSE}. Must be sorted in increasing order!}
+\item{support}{numeric vector, sorted in increasing order, that
+contains the entirety of all observable values of
+the p-value supports; for \code{kernel_DLR_fast()}, it
+is ignored if \code{stepUp = FALSE}.}
 
-\item{sorted_pv}{a vector of observed p-values, in increasing order.}
+\item{pCDFcounts}{integer vector of counts that indicates to how many
+p-values each \strong{unique} p-value distribution
+belongs.}
 
-\item{exact}{a boolean specifying whether to compute the Poisson-Binomial distribution exactly or by a normal approximation.}
+\item{sorted_w_pv}{numeric vector containing the weighted p-values,
+sorted in increasing order.}
 
-\item{qvalues}{a numeric vector. Contains weighted raw p-values.}
-
-\item{weights}{a numeric vector. Contains the weights of the p-values.}
+\item{weights}{numeric vector containing the \strong{rescaled} weights,
+sorted in \strong{de}creasing order.}
 
 \item{geom_weighting}{a boolean specifying whether to conduct geometric
 (\code{TRUE}) or arithmetic (\code{FALSE})
 weighting.}
+
+\item{exact}{single boolean indicating whether to compute the Poisson-Binomial distribution exactly or by normal approximation.}
 }
 \value{
 For ".fast" kernels, a vector of transformed p-values is returned; ".crit"
-kernels return a list object with critical constants (\code{$crit.consts})
-and transformed p-values (\code{$pval.transf}).
+kernels return a list object with critical constants (\verb{$crit.consts})
+and transformed p-values (\verb{$pval.transf}).
 }
 \description{
 Kernel functions transform observed p-values or their support according to
-[HLR], [PB] and [HGR]. The output is used by \code{\link{discrete.LR}},
-\code{\link{discrete.PB}} and \code{\link{discrete.GR}}, respectively.
+[HLR], [PB] and [HGR]. The output is used by \code{\link[=discrete.LR]{discrete.LR()}},
+\code{\link[=discrete.PB]{discrete.PB()}} and \code{\link[=discrete.GR]{discrete.GR()}}, respectively.
 For each procedure, there is a kernel for fast computation and one for
 calculation of critical values. Kernels followed by ".crit", e.g.
 \code{kernel.DGR.crit}, compute and return these critical values, while
 kernels ending in ".fast" only transform p-values and are therefore faster.
 The end user should not use these functions directly.
+
+\strong{Note}: As of version 2.0, these functions are purely internal functions!
+As a consequence, they have to be called directly via \code{:::}, e.g.
+\code{FDX:::kernel_DGR_fast()}. But users should \strong{not} rely on them, as
+parameters (including their names, order, etc.) may be changed without
+notice!
 }
 \examples{
 X1 <- c(4, 2, 2, 14, 6, 9, 4, 0, 1)
@@ -120,26 +154,26 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
 alpha <- 0.05
 
 # If not searching for critical constants, we use only the observed p-values
 sorted.pvals <- sort(raw.pvalues)
-y.DLR.fast <- kernel_DLR_fast(pCDFlist, sorted.pvals, TRUE)
-y.NDGR.fast <- kernel_DGR_fast(pCDFlist, sorted.pvals, FALSE)$pval.transf
+y.DLR.fast <- FDX:::kernel_DLR_fast(pCDFlist, sorted.pvals, TRUE)
+y.NDGR.fast <- FDX:::kernel_DGR_fast(pCDFlist, sorted.pvals, FALSE)$pval.transf
 # transformed values
 y.DLR.fast
 y.NDGR.fast
 
 # compute support
 pv.list <- sort(unique(unlist(pCDFlist)))
-y.DGR.crit <- kernel_DGR_crit(pCDFlist, pv.list, sorted.pvals, TRUE)
-y.NDPB.crit <- kernel_DPB_crit(pCDFlist, pv.list, sorted.pvals, FALSE)
+y.DGR.crit <- FDX:::kernel_DGR_crit(pCDFlist, pv.list, sorted.pvals, TRUE)
+y.NDPB.crit <- FDX:::kernel_DPB_crit(pCDFlist, pv.list, sorted.pvals, FALSE)
 # critical constants
 y.DGR.crit$crit.consts
 y.NDPB.crit$crit.consts
@@ -149,8 +183,9 @@ y.NDPB.crit$pval.transf
 
 }
 \seealso{
-\code{\link{FDX-package}}, \code{\link{discrete.LR}}
-\code{\link{discrete.GR}}, \code{\link{discrete.PB}},
-\code{\link{weighted.LR}}, \code{\link{weighted.GR}},
-\code{\link{discrete.PB}}
+\code{\link[=FDX-package]{FDX}}, \code{\link[=discrete.LR]{discrete.LR()}}
+\code{\link[=discrete.GR]{discrete.GR()}}, \code{\link[=discrete.PB]{discrete.PB()}},
+\code{\link[=weighted.LR]{weighted.LR()}}, \code{\link[=weighted.GR]{weighted.GR()}},
+\code{\link[=discrete.PB]{discrete.PB()}}
 }
+\keyword{internal}

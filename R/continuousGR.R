@@ -1,154 +1,158 @@
-#'@name continuous.GR
-#'@title Continuous Guo-Romano procedure
+#' @name continuous.GR
+#' 
+#' @title
+#' Continuous Guo-Romano procedure
+#' 
+#' @description
+#' Apply the usual continuous \[GR\] procedure, with or without computing the
+#' critical values, to a set of p-values. A non-adaptive version is available as
+#' well.
 #'
-#'@description
-#'Apply the usual continuous [GR] procedure, with or without computing the
-#'critical values, to a set of p-values. A non-adaptive version is available as
-#'well.
+#' @templateVar test.results TRUE
+#' @templateVar alpha TRUE
+#' @templateVar zeta TRUE
+#' @templateVar adaptive TRUE
+#' @templateVar critical.values TRUE
+#' @templateVar select.threshold TRUE
+#' @templateVar weights FALSE
+#' @template param 
+#' 
+#' @details
+#' `GR` and `NGR` are wrapper functions for `continuous.GR`. The
+#' first one simply passes all its arguments to `continuous.GR` with
+#' `adaptive = TRUE` and `NGR` does the same with
+#' `adaptive = FALSE`.
+#' 
+#' @seealso
+#' [`kernel`], [`FDX-package`], [`continuous.LR()`],
+#' [`discrete.LR()`], [`discrete.GR()`], 
+#' [`discrete.PB()`], [`weighted.LR()`], 
+#' [`weighted.GR()`], [`weighted.PB()`]
 #'
-#'@details
-#'\code{GR} and \code{NGR} are wrapper functions for \code{continuous.GR}. The
-#'first one simply passes all its parameters to \code{continuous.GR} with
-#'\code{adaptive = TRUE} and \code{NGR} does the same with
-#'\code{adaptive = FALSE}.
-#'
-#'@seealso
-#'\code{\link{kernel}}, \code{\link{FDX-package}}, \code{\link{continuous.LR}},
-#'\code{\link{discrete.LR}}, \code{\link{discrete.GR}}, 
-#'\code{\link{discrete.PB}}, \code{\link{weighted.LR}}, 
-#'\code{\link{weighted.GR}}, \code{\link{weighted.PB}}
-#'
-#'@templateVar raw.pvalues TRUE
-#'@templateVar pCDFlist FALSE
-#'@templateVar alpha TRUE
-#'@templateVar zeta TRUE
-#'@templateVar direction FALSE
-#'@templateVar adaptive TRUE
-#'@templateVar critical.values TRUE
-#'@templateVar exact FALSE
-#'@templateVar pvalues FALSE
-#'@templateVar sorted_pv FALSE
-#'@templateVar stepUp FALSE
-#'@templateVar support FALSE
-#'@templateVar weights FALSE
-#'@templateVar weighting.method FALSE
-#'@template param 
-#'
-#'@template example
-#'@examples
-#'
-#'GR.fast <- GR(raw.pvalues)
-#'summary(GR.fast)
-#'
-#'GR.crit <- GR(raw.pvalues, critical.values = TRUE)
-#'summary(GR.crit)
-#'
-#'NGR.fast <- NGR(raw.pvalues)
-#'summary(NGR.fast)
-#'
-#'NGR.crit <- NGR(raw.pvalues, critical.values = TRUE)
-#'summary(NGR.crit)
-#'
-#'@templateVar Critical.values TRUE
-#'@templateVar Adaptive TRUE
-#'@templateVar Weighting FALSE
-#'@template return
-#'
-#'@importFrom stats qbeta pbinom
-#'@importFrom DiscreteFDR match.pvals
-#'@export
-continuous.GR <- function(raw.pvalues, alpha = 0.05, zeta = 0.5, adaptive = TRUE, critical.values = FALSE){
-  #--------------------------------------------
+#' @references
+#' Guo, W. & Romano, J. P. (2007). A generalized Sidak-Holm procedure and
+#'   control of generalized error rates under independence.
+#'   *Statistical Applications in Genetics and Molecular Biology*, *6*(1),
+#'   Art. 3, 35 pp. (eletronic). \doi{10.2202/1544-6115.1247}
+#'   
+#' @template example
+#' @examples
+#' 
+#' # GR without critical values; using extracted p-values
+#' GR.fast <- GR(raw.pvalues)
+#' summary(GR.fast)
+#' 
+#' # LR with critical values; using test results object
+#' GR.crit <- GR(test.results, critical.values = TRUE)
+#' summary(GR.crit)
+#' 
+#' # Non-adaptive GR without critical values; using test results object
+#' NGR.fast <- NGR(test.results)
+#' summary(NGR.fast)
+#' 
+#' # Non-adaptive GR with critical values; using extracted p-values
+#' NGR.crit <- NGR(raw.pvalues, critical.values = TRUE)
+#' summary(NGR.crit)
+#' 
+#' @templateVar Critical.values TRUE
+#' @templateVar Adaptive TRUE
+#' @templateVar Weighting FALSE
+#' @template return
+#' 
+#' @importFrom checkmate assert check_numeric check_r6 qassert
+#' @export
+continuous.GR <- function(
+    test.results,
+    alpha = 0.05,
+    zeta = 0.5,
+    adaptive = TRUE,
+    critical.values = FALSE,
+    select.threshold = 1
+) {
+  #----------------------------------------------------
   #       check arguments
-  #--------------------------------------------
-  if(is.null(alpha) || is.na(alpha) || !is.numeric(alpha) || alpha < 0 || alpha > 1)
-    stop("'alpha' must be a probability between 0 and 1!")
+  #----------------------------------------------------
+  # test results (p-values)
+  assert(
+    check_numeric(
+      x = test.results,
+      lower = 0,
+      upper = 1,
+      any.missing = FALSE,
+      min.len = 1
+    ),
+    check_r6(
+      x = test.results,
+      classes = "DiscreteTestResults",
+      public = c("get_pvalues", "get_pvalue_supports", "get_support_indices")
+    )
+  )
+  pvals <- if(is.numeric(test.results))
+    test.results else
+      test.results$get_pvalues()
   
-  if(is.null(zeta) || is.na(zeta) || !is.numeric(zeta) || zeta < 0 || zeta > 1)
-    stop("'zeta' must be a probability between 0 and 1!")
-  #--------------------------------------------
-  #       number of tests and [alpha * m] + 1
-  #--------------------------------------------
-  m <- length(raw.pvalues)
-  a <- floor(alpha * 1:m) + 1
-  #--------------------------------------------
-  #       Determine sort order and do sorting
-  #--------------------------------------------
-  o <- order(raw.pvalues)
-  sorted.pvals <- raw.pvalues[o]
-  #--------------------------------------------
-  #        Compute [GR] or [NGR] significant p-values,
-  #        their indices and the number of rejections
-  #--------------------------------------------
-  # compute transformed sorted p-values
-  if(adaptive){
-    y <- cummax(pbinom(a - 1, m - 1:m + a, pmin(1, sorted.pvals), lower.tail = FALSE)) # cummax(pbeta(pmin(1, sorted.pvals), a, m - 1:m + 1))
-  }else{
-    y <- cummax(pbinom(a - 1, m, pmin(1, sorted.pvals), lower.tail = FALSE)) # cummax(pbeta(pmin(1, sorted.pvals), a, m - a + 1))
-  }
-  # determine significant (transformed) p-values
-  idx <- which(y > zeta)
-  if(length(idx)){
-    m.rej <- min(idx) - 1
-    if (m.rej){
-      # determine significant (observed) p-values in sorted.pvals
-      idx <- which(raw.pvalues <= sorted.pvals[m.rej])
-      pvec.rej <- raw.pvalues[idx]
-    }else{
-      idx <- numeric(0)
-      pvec.rej <- numeric(0)
-    }
-  }else{
-    m.rej <- m
-    idx <- 1:m
-    pvec.rej <- raw.pvalues
-  }
-  # find critical constants
-  if(critical.values){
-    if (adaptive){
-      crit.constants <- qbeta(zeta, a, m - 1:m + 1)
-    }else{
-      crit.constants <- qbeta(zeta, a, m - a + 1)
-    }
-  }
+  # FDP level
+  qassert(x = alpha, rules = "N1[0, 1]")
   
-  #--------------------------------------------
-  #       Create output S3 object
-  #--------------------------------------------
-  output <- list(Rejected = pvec.rej, Indices = idx, Num.rejected = m.rej)
+  # Exceedance probability
+  qassert(x = zeta, rules = "N1[0, 1]")
   
-  # add adjusted p-values to output list
-  ro <- order(o)
-  output$Adjusted = y[ro]
+  # adaptiveness
+  qassert(adaptive, "B1")
   
-  # add critical values to output list
-  if(critical.values) output$Critical.values = crit.constants
+  # compute and return critical values?
+  qassert(critical.values, "B1")
   
-  # include details of the used algorithm as strings
-  alg <- "Continuous Guo-Romano procedure"
-  output$Method <- if(!adaptive) paste("Non-Adaptive", alg) else alg
-  output$FDP.threshold <- alpha
-  output$Exceedance.probability <- zeta
-  output$Adaptive <- adaptive
+  # selection threshold
+  qassert(x = select.threshold, rules = "N1(0, 1]")
   
-  # original test data
-  output$Data <- list()
-  output$Data$raw.pvalues <- raw.pvalues
-  # object names of the data as strings
-  output$Data$data.name <- deparse(substitute(raw.pvalues))
+  #----------------------------------------------------
+  #       execute computations
+  #----------------------------------------------------
+  output <- continuous.fdx.int(
+    pvec        = pvals,
+    method      = "GR",
+    alpha       = alpha,
+    zeta        = zeta,
+    adaptive    = adaptive,
+    crit.consts = critical.values,
+    threshold   = select.threshold,
+    data.name   = deparse(substitute(test.results))
+  )
   
-  class(output) <- "FDX"
   return(output)
 }
 
-#'@rdname continuous.GR
-#'@export
-GR <- function(raw.pvalues, alpha = 0.05, zeta = 0.5, critical.values = FALSE){
-  return(continuous.GR(raw.pvalues, alpha, zeta, TRUE, critical.values))
+#' @rdname continuous.GR
+#' @export
+GR <- function(
+    test.results,
+    alpha = 0.05,
+    zeta = 0.5,
+    critical.values = FALSE,
+    select.threshold = 1
+) {
+  out <- continuous.GR(test.results, alpha, zeta, TRUE, 
+                       critical.values, select.threshold)
+  
+  out$Data$Data.name <- deparse(substitute(test.results))
+  
+  return(out)
 }
 
-#'@rdname continuous.GR
-#'@export
-NGR <- function(raw.pvalues, alpha = 0.05, zeta = 0.5, critical.values = FALSE){
-  return(continuous.GR(raw.pvalues, alpha, zeta, FALSE, critical.values))
+#' @rdname continuous.GR
+#' @export
+NGR <- function(
+    test.results,
+    alpha = 0.05,
+    zeta = 0.5,
+    critical.values = FALSE,
+    select.threshold = 1
+) {
+  out <- continuous.GR(test.results, alpha, zeta, FALSE, 
+                       critical.values, select.threshold)
+  
+  out$Data$Data.name <- deparse(substitute(test.results))
+  
+  return(out)
 }

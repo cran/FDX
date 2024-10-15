@@ -7,7 +7,7 @@
 \method{print}{FDX}(x, ...)
 }
 \arguments{
-\item{x}{an object of class "\code{FDX}".}
+\item{x}{object of class \code{FDX}.}
 
 \item{...}{further arguments to be passed to or from other methods.
 They are ignored in this function.}
@@ -29,13 +29,15 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
-DPB.crit <- DPB(raw.pvalues, pCDFlist, critical.values = TRUE)
+# DPB with critical values; using test results object
+DPB.crit <- DPB(test.results, critical.values = TRUE)
+# print results
 print(DPB.crit)
 
 }

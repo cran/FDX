@@ -21,10 +21,10 @@ rejection.path(
 )
 }
 \arguments{
-\item{x}{an object of class "\code{FDX}".}
+\item{x}{object of class "\code{FDX}".}
 
-\item{xlim}{the x limits of the plot. If \code{NULL} (default),
-the (0, 1) range is used.}
+\item{xlim}{x axis limits of the plot. If \code{NULL} (default),
+the [0, 1] range is used.}
 
 \item{ylim}{the y limits of the plot. If \code{NULL} (default),
 the double of the median of the number of possible
@@ -49,7 +49,7 @@ procedure.}
 
 \item{ref.lty, ref.lwd}{line type and thickness for the reference line.}
 
-\item{...}{further arguments to \code{\link{plot.stepfun}}.}
+\item{...}{further arguments to \code{\link[stats:plot.stepfun]{stats::plot.stepfun()}}.}
 }
 \value{
 Invisibly returns a \code{stepfun} object that computes the number of
@@ -69,16 +69,20 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
+# DLR without critical values; using extracted p-values and supports
 DLR <- DLR(raw.pvalues, pCDFlist)
-NDLR <- NDLR(raw.pvalues, pCDFlist)
-
+# plot number of rejections dependent on the exceedance probability zeta
 rejection.path(DLR, xlim = c(0, 1), ref.show = TRUE, ref.col = "green", ref.lty = 4)
+
+# None-adaptive DLR without critical values; using test results object
+NDLR <- NDLR(test.results)
+# add plot for non-adaptive procedure (in red)
 rejection.path(NDLR, col = "red", add = TRUE)
 
 }

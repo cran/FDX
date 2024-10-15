@@ -3,8 +3,8 @@
 \name{fast.Discrete}
 \alias{fast.Discrete}
 \alias{fast.Discrete.LR}
-\alias{fast.Discrete.PB}
 \alias{fast.Discrete.GR}
+\alias{fast.Discrete.PB}
 \title{Fast application of discrete procedures}
 \usage{
 fast.Discrete.LR(
@@ -17,6 +17,15 @@ fast.Discrete.LR(
   adaptive = TRUE
 )
 
+fast.Discrete.GR(
+  counts,
+  alternative = "greater",
+  input = "noassoc",
+  alpha = 0.05,
+  zeta = 0.5,
+  adaptive = TRUE
+)
+
 fast.Discrete.PB(
   counts,
   alternative = "greater",
@@ -26,64 +35,76 @@ fast.Discrete.PB(
   adaptive = TRUE,
   exact = FALSE
 )
-
-fast.Discrete.GR(
-  counts,
-  alternative = "greater",
-  input = "noassoc",
-  alpha = 0.05,
-  zeta = 0.5,
-  adaptive = TRUE
-)
 }
 \arguments{
 \item{counts}{a data frame of 2 or 4 columns and any number of lines,
 each line representing a 2 x 2 contingency table to
 test. The number of columns and what they must contain
 depend on the value of the \code{input} argument, see
-Details of \code{\link{fisher.pvalues.support}}.}
+Details of \code{\link[DiscreteFDR:fisher.pvalues.support]{DiscreteFDR::fisher.pvalues.support()}}.}
 
-\item{alternative}{same argument as in \code{\link{fisher.test}}. The three
+\item{alternative}{same argument as in \code{\link[=fisher.test]{fisher.test()}}. The three
 possible values are \code{"greater"} (default),
 \code{"two.sided"} or \code{"less"}; may be abbreviated.}
 
 \item{input}{the format of the input data frame, see Details of
-\code{\link[DiscreteFDR]{fisher.pvalues.support}}. The
+\code{\link[DiscreteFDR:fisher.pvalues.support]{DiscreteFDR::fisher.pvalues.support()}}. The
 three possible values are \code{"noassoc"} (default),
-\code{"marginal"} or \code{"HG2011"}; may be 
+\code{"marginal"} or \code{"HG2011"}; may be
 abbreviated.}
 
-\item{alpha}{the target FDP, a number strictly between 0 and 1. For \code{*.fast} kernels, it is only necessary, if \code{stepUp = TRUE}.}
+\item{alpha}{single real number strictly between 0 and 1 specifying the target FDP.}
 
-\item{zeta}{the target probability of not exceeding the desired FDP, a number strictly between 0 and 1. If \code{zeta=NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
+\item{zeta}{single real number strictly between 0 and 1 specifying the target probability of not exceeding the desired FDP. If \code{zeta = NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
 
-\item{direction}{a character string specifying whether to conduct a step-up (\code{direction="su"}, the default) or step-down procedure (\code{direction="sd"}).}
+\item{direction}{single character string specifying whether to perform the step-up (\verb{"su}) or step-down (\code{"sd"}; the default) version of the Lehmann-Romano procedure.}
 
-\item{adaptive}{a boolean specifying whether to conduct an adaptive procedure or not.}
+\item{adaptive}{single boolean indicating whether to conduct an adaptive procedure or not.}
 
-\item{exact}{a boolean specifying whether to compute the Poisson-Binomial distribution exactly or by a normal approximation.}
+\item{exact}{single boolean indicating whether to compute the Poisson-Binomial distribution exactly or by normal approximation.}
 }
 \value{
 A \code{FDX} S3 class object whose elements are:
-\item{Rejected}{Rejected raw p-values.}
-\item{Indices}{Indices of rejected hypotheses.}
-\item{Num.rejected}{Number of rejections.}
-\item{Adjusted}{Adjusted p-values (only for step-down direction).}
+\item{Rejected}{rejected raw \eqn{p}-values.}
+\item{Indices}{indices of rejected \eqn{p}-values.}
+\item{Num.rejected}{number of rejections.}
 
+\item{Adjusted}{adjusted \eqn{p}-values (only for step-down direction).}
+\item{Critical.values}{critical values (only exists if computations where performed with \code{critical.values = TRUE}).}
+\item{Select}{list with data related to \eqn{p}-value selection; only exists if \code{threshold < 1}.}
+\item{Select$Threshold}{\eqn{p}-value selection \code{threshold}.}
+\item{Select$Effective.Thresholds}{results of each \eqn{p}-value CDF evaluated at the selection threshold.}
+\item{Select$Pvalues}{selected \eqn{p}-values that are \eqn{\leq} selection \code{threshold}.}
+\item{Select$Indices}{indices of \eqn{p}-values \eqn{\leq} selection \code{threshold}.}
+\item{Select$Scaled}{scaled selected \eqn{p}-values.}
+\item{Select$Number}{number of selected \eqn{p}-values \eqn{\leq} \code{threshold}.}
+\item{Data}{list with input data.}
+\item{Data$Method}{character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
+\item{Data$Raw.pvalues}{all observed raw \eqn{p}-values.}
 
-\item{Method}{A character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
-\item{FDP.threshold}{FDP threshold \code{alpha}.}
-\item{Exceedance.probability}{Probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence \code{1 - zeta}.}
-\item{Adaptive}{A boolean specifying whether an adaptive procedure was conducted or not.}
+\item{Data$FDP.threshold}{FDP threshold \code{alpha}.}
+\item{Data$Exceedance.probability}{probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence 1 - \code{zeta}.}
+\item{Data$Adaptive}{boolean indicating whether an adaptive procedure was conducted or not.}
 
-\item{Data$raw.pvalues}{The values of \code{raw.pvalues}.}
-
-
-\item{Data$data.name}{The respective variable names of \code{raw.pvalues} and \code{pCDFlist}.}
+\item{Data$Data.name}{the respective variable name(s) of the input data.}
 }
 \description{
-Applies the [DLR], [DGR] or [DPB] procedures, without computing the critical
-values, to a data set of 2 x 2 contingency tables using Fisher's exact test.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+Applies the [DLR], [DGR] or [DPB] procedures, \strong{without} computing the
+critical values, to a data set of 2 x 2 contingency tables using Fisher's
+exact test.
+
+\strong{Note}: These functions are deprecated and will be removed in a future
+version. Please use \code{\link[=direct.discrete]{direct.discrete.*()}} with
+\code{test.fun = DiscreteTests::fisher.test.pv} and (optional)
+\code{preprocess.fun = DiscreteDatasets::reconstruct_two} or
+\code{preprocess.fun = DiscreteDatasets::reconstruct_four} instead. Alternatively,
+use a pipeline like\cr
+\verb{data |>}\cr
+\verb{  DiscreteDatasets::reconstruct_*(<args>) |>}\cr
+\verb{  DiscreteTests::*.test.pv(<args>) |>}\cr
+\verb{  discrete.*(<args>)}.
 }
 \examples{
 
@@ -96,32 +117,36 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
+# DLR
 DLR.sd <- fast.Discrete.LR(counts = df, input = "noassoc")
-DLR.sd$Adjusted
 summary(DLR.sd)
+
+# DLR
 DLR.su <- fast.Discrete.LR(counts = df, input = "noassoc", direction = "su")
 summary(DLR.su)
 
+# Non-adaptive DLR
 NDLR.sd <- fast.Discrete.LR(counts = df, input = "noassoc", adaptive = FALSE)
-NDLR.sd$Adjusted
 summary(NDLR.sd)
+
+# Non-adaptive DLR
 NDLR.su <- fast.Discrete.LR(counts = df, input = "noassoc", direction = "su", adaptive = FALSE)
 summary(NDLR.su)
 
+# DGR
 DGR <- fast.Discrete.GR(counts = df, input = "noassoc")
-DGR$Adjusted
 summary(DGR)
 
+# Non-adaptive DGR
 NDGR <- fast.Discrete.GR(counts = df, input = "noassoc", adaptive = FALSE)
-NDGR$Adjusted
 summary(NDGR)
 
+# DPB
 DPB <- fast.Discrete.PB(counts = df, input = "noassoc")
-DPB$Adjusted
 summary(DPB)
 
+# Non-adaptive DPB
 NDPB <- fast.Discrete.PB(counts = df, input = "noassoc", adaptive = FALSE)
-NDPB$Adjusted
 summary(NDPB)
 
 }

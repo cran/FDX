@@ -7,51 +7,78 @@
 \title{Weighted Poisson-Binomial Procedure}
 \usage{
 weighted.PB(
-  raw.pvalues,
-  weights,
+  test.results,
+  weights = NULL,
   alpha = 0.05,
-  zeta = 0.05,
-  weighting.method = "AM",
+  zeta = 0.5,
+  weighting.method = c("AM", "GM"),
   critical.values = FALSE,
-  exact = TRUE
+  exact = TRUE,
+  select.threshold = 1
 )
 
-wPB.AM(raw.pvalues, weights, alpha = 0.05, zeta = 0.5, critical.values = FALSE)
+wPB.AM(
+  test.results,
+  weights,
+  alpha = 0.05,
+  zeta = 0.5,
+  critical.values = FALSE,
+  exact = TRUE,
+  select.threshold = 1
+)
 
-wPB.GM(raw.pvalues, weights, alpha = 0.05, zeta = 0.5, critical.values = FALSE)
+wPB.GM(
+  test.results,
+  weights,
+  alpha = 0.05,
+  zeta = 0.5,
+  critical.values = FALSE,
+  exact = TRUE,
+  select.threshold = 1
+)
 }
 \arguments{
-\item{raw.pvalues}{vector of the raw observed p-values, as provided by the end user and before matching with their nearest neighbor in the CDFs supports.}
+\item{test.results}{either a numeric vector with p-values or an R6 object of class \code{\link[DiscreteTests]{DiscreteTestResults}} from package \code{\link[DiscreteTests:DiscreteTests-package]{DiscreteTests}} for which a discrete FDR procedure is to be performed.}
 
-\item{weights}{a numeric vector. Contains the weights of the p-values.}
+\item{weights}{numeric vector that contains the weights for the p-values.}
 
-\item{alpha}{the target FDP, a number strictly between 0 and 1. For \code{*.fast} kernels, it is only necessary, if \code{stepUp = TRUE}.}
+\item{alpha}{single real number strictly between 0 and 1 specifying the target FDP.}
 
-\item{zeta}{the target probability of not exceeding the desired FDP, a number strictly between 0 and 1. If \code{zeta=NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
+\item{zeta}{single real number strictly between 0 and 1 specifying the target probability of not exceeding the desired FDP. If \code{zeta = NULL} (the default), then \code{zeta} is chosen equal to \code{alpha}.}
 
-\item{weighting.method}{a character string specifying whether to conduct arithmetic (\code{direction="AM"}, the default) or geometric weighting (\code{direction="GM"}) of p-values.}
+\item{weighting.method}{single character string specifying whether to conduct arithmetic (\code{direction = "AM"}, the default) or geometric weighting (\code{direction = "GM"}) of p-values.}
 
-\item{critical.values}{a boolean. If \code{TRUE}, critical constants are computed and returned (this is computationally intensive).}
+\item{critical.values}{single boolean indicating whether critical constants are to be computed.}
 
-\item{exact}{a boolean specifying whether to compute the Poisson-Binomial distribution exactly or by a normal approximation.}
+\item{exact}{single boolean indicating whether to compute the Poisson-Binomial distribution exactly or by normal approximation.}
+
+\item{select.threshold}{single real number strictly between 0 and 1 indicating the largest raw p-value to be considered, i.e. only p-values below this threshold are considered and the procedures are adjusted in order to take this selection effect into account; if \code{threshold = 1} (the default), all raw p-values are selected.}
 }
 \value{
 A \code{FDX} S3 class object whose elements are:
-\item{Rejected}{Rejected raw p-values.}
-\item{Indices}{Indices of rejected hypotheses.}
-\item{Num.rejected}{Number of rejections.}
-\item{Adjusted}{Adjusted p-values (only for step-down direction).}
-\item{Weighted}{Weighted p-values.}
-\item{Critical.values}{Critical values (if requested).}
-\item{Method}{A character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
-\item{FDP.threshold}{FDP threshold \code{alpha}.}
-\item{Exceedance.probability}{Probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence \code{1 - zeta}.}
+\item{Rejected}{rejected raw \eqn{p}-values.}
+\item{Indices}{indices of rejected \eqn{p}-values.}
+\item{Num.rejected}{number of rejections.}
+\item{Weighted}{weighted \eqn{p}-values.}
+\item{Adjusted}{adjusted \eqn{p}-values.}
+\item{Critical.values}{critical values (only exists if computations where performed with \code{critical.values = TRUE}).}
+\item{Select}{list with data related to \eqn{p}-value selection; only exists if \code{threshold < 1}.}
+\item{Select$Threshold}{\eqn{p}-value selection \code{threshold}.}
+\item{Select$Effective.Thresholds}{results of each \eqn{p}-value CDF evaluated at the selection threshold.}
+\item{Select$Pvalues}{selected \eqn{p}-values that are \eqn{\leq} selection \code{threshold}.}
+\item{Select$Indices}{indices of \eqn{p}-values \eqn{\leq} selection \code{threshold}.}
+\item{Select$Scaled}{scaled selected \eqn{p}-values.}
+\item{Select$Number}{number of selected \eqn{p}-values \eqn{\leq} \code{threshold}.}
+\item{Data}{list with input data.}
+\item{Data$Method}{character string describing the used algorithm, e.g. 'Discrete Lehmann-Romano procedure (step-up)'.}
+\item{Data$Raw.pvalues}{all observed raw \eqn{p}-values.}
+\item{Data$Weights}{the weights for the raw \eqn{p}-values.}
 
-\item{Weighting}{A character string describing the weighting method.}
-\item{Data$raw.pvalues}{The values of \code{raw.pvalues}.}
+\item{Data$FDP.threshold}{FDP threshold \code{alpha}.}
+\item{Data$Exceedance.probability}{probability \code{zeta} of FDP exceeding \code{alpha}; thus, FDP is being controlled at level \code{alpha} with confidence 1 - \code{zeta}.}
 
-\item{Data$weights}{The values of \code{weights}.}
-\item{Data$data.name}{The respective variable names of \code{raw.pvalues} and \code{pCDFlist}.}
+\item{Data$Weighting}{character string describing the weighting method.}
+\item{Data$Data.name}{the respective variable name(s) of the input data.}
 }
 \description{
 Apply the weighted [wPB] procedure, with or without computing the
@@ -62,33 +89,42 @@ approximation.
 }
 \details{
 \code{wPB.AM} and \code{wPB.GM} are wrapper functions for \code{weighted.PB}.
-The first one simply passes all its parameters to \code{weighted.PB} with
+The first one simply passes all its arguments to \code{weighted.PB} with
 \code{weighting.method = "AM"} and \code{wPB.GM} does the same with
 \code{weighting.method = "GM"}.
 }
 \examples{
 # Construction of the p-values and their supports for weighted methods
 raw.pvalues.weighted <- c(0.7389727, 0.1882310, 0.1302457, 0.9513677,
-                         0.7592122, 0.0100559, 0.0000027, 0.1651034)
+                          0.7592122, 0.0100559, 0.0000027, 0.1651034)
 weights <- c(0.7947122, 1.2633867, 2.8097858, 2.2112801,
-            2.3878654, 1.2389620, 2.3878654, 0.7947122)
+             2.3878654, 1.2389620, 2.3878654, 0.7947122)
 
+# arithmetic-weighted Poisson-binomial procedure without critical values
 wPB.AM.fast <- wPB.AM(raw.pvalues.weighted, weights)
 summary(wPB.AM.fast)
 
+# arithmetic-weighted Poisson-binomial procedure with critical values
 wPB.AM.crit <- wPB.AM(raw.pvalues.weighted, weights, critical.values = TRUE)
 summary(wPB.AM.crit)
 
+# geometric-weighted Poisson-binomial procedure without critical values
 wPB.GM.fast <- wPB.GM(raw.pvalues.weighted, weights)
 summary(wPB.GM.fast)
 
+# geometric-weighted Poisson-binomial procedure with critical values
 wPB.GM.crit <- wPB.GM(raw.pvalues.weighted, weights, critical.values = TRUE)
 summary(wPB.GM.crit)
 
 }
+\references{
+Döhler, S. & Roquain, E. (2020). Controlling False Discovery Exceedance for
+Heterogeneous Tests. \emph{Electronic Journal of Statistics}, \emph{14}(2),
+pp. 4244-4272. \doi{10.1214/20-EJS1771}
+}
 \seealso{
-\code{\link{kernel}}, \code{\link{FDX-package}}, \code{\link{continuous.LR}},
-\code{\link{continuous.GR}}, \code{\link{discrete.LR}}, 
-\code{\link{discrete.GR}}, \code{\link{discrete.PB}}, 
-\code{\link{weighted.LR}}, \code{\link{weighted.GR}}
+\code{\link{kernel}}, \code{\link[=FDX-package]{FDX}}, \code{\link[=continuous.LR]{continuous.LR()}},
+\code{\link[=continuous.GR]{continuous.GR()}}, \code{\link[=discrete.LR]{discrete.LR()}},
+\code{\link[=discrete.GR]{discrete.GR()}}, \code{\link[=discrete.PB]{discrete.PB()}},
+\code{\link[=weighted.LR]{weighted.LR()}}, \code{\link[=weighted.GR]{weighted.GR()}}
 }

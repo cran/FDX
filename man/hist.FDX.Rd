@@ -2,26 +2,22 @@
 % Please edit documentation in R/plot_funs.R
 \name{hist.FDX}
 \alias{hist.FDX}
-\title{Histogram of Raw p-Values}
+\title{Histogram of Raw P-Values}
 \usage{
-\method{hist}{FDX}(x, breaks = "FD", main = NULL, xlab = NULL, ylab = NULL, plot = TRUE, ...)
+\method{hist}{FDX}(x, breaks = "FD", mode = c("raw", "selected", "weighted"), ...)
 }
 \arguments{
-\item{x}{an object of class "\code{FDX}".}
+\item{x}{object of class \code{FDX}.}
 
-\item{breaks}{as in \code{\link{hist}}; here, the Friedman-Diaconis
-algorithm(\code{"FD"}) is used as default.}
+\item{breaks}{as in \code{\link[graphics:hist]{graphics::hist()}}; here, the Friedman-Diaconis
+algorithm (\code{"FD"}) is used as default.}
 
-\item{main}{main title. If \code{NULL} (default), a description string
-is used.}
+\item{mode}{single character string specifying for which $p$-values the
+histogram is to be generated; must be one of \code{"raw"},
+\code{"selected"} or \code{"weighted"}.}
 
-\item{xlab, ylab}{labels for x and y axis.}
-
-\item{plot}{a boolean If \code{TRUE} (the default), a histogram is
-plotted, otherwise a list of breaks and counts is returned.}
-
-\item{...}{further arguments to \code{\link{hist}} or
-\code{\link{plot.histogram}}, respectively.}
+\item{...}{further arguments to \code{\link[graphics:hist]{graphics::hist()}} or
+\code{\link[graphics:plothistogram]{graphics::plot.histogram()}}, respectively.}
 }
 \value{
 An object of class \code{histogram}.
@@ -30,9 +26,8 @@ An object of class \code{histogram}.
 Computes a histogram of the raw p-values of a \code{FDX} object.
 }
 \details{
-If \code{x} contains results of a weighted approach, a histogram of the
-weighted p-values is constructed. Otherwise, it is constituted by the
-raw ones.
+If \code{x} does not contain results of a weighting or selection approach, a
+warning is issued and a histogram of the raw $p$-values is drawn.
 }
 \examples{
 X1 <- c(4, 2, 2, 14, 6, 9, 4, 0, 1)
@@ -44,13 +39,22 @@ Y2 <- N2 - X2
 df <- data.frame(X1, Y1, X2, Y2)
 df
 
-# Construction of the p-values and their supports (fisher.pvalues.support
-# is from 'DiscreteFDR' package!)
-df.formatted <- fisher.pvalues.support(counts = df, input = "noassoc")
-raw.pvalues <- df.formatted$raw
-pCDFlist <- df.formatted$support
+# Construction of the p-values and their supports with Fisher's exact test
+library(DiscreteTests)  # for Fisher's exact test
+test.results <- fisher_test_pv(df)
+raw.pvalues <- test.results$get_pvalues()
+pCDFlist <- test.results$get_pvalue_supports()
 
+# DGR
 DGR <- DGR(raw.pvalues, pCDFlist)
+# histogram of raw p-values
 hist(DGR)
+
+# arithmetic-weighted GR (using 1 - raw.pvalues as weights)
+wGR <- wGR.AM(raw.pvalues, 1 - raw.pvalues)
+# histogram of raw p-values
+hist(wGR)
+# histogram of weighted p-values
+hist(wGR, mode = "weighted")
 
 }
