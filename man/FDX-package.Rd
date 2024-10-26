@@ -46,7 +46,7 @@ error rate. \emph{The Annals of Statistics}, \emph{33}(3), pp. 1138-1154.
 Guo, W. & Romano, J. P. (2007). A generalized Sidak-Holm procedure and
 control of generalized error rates under independence.
 \emph{Statistical Applications in Genetics and Molecular Biology}, \emph{6}(1),
-Art. 3, 35 pp. (eletronic). \doi{10.2202/1544-6115.1247}
+Art. 3, 35 pp. (electronic). \doi{10.2202/1544-6115.1247}
 }
 \seealso{
 Useful links:
@@ -57,11 +57,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Florian Junge \email{florian.junge@h-da.de}
+\strong{Maintainer}: Florian Junge \email{diso.fbmn@h-da.de} (\href{https://orcid.org/0009-0001-6856-6938}{ORCID})
 
 Authors:
 \itemize{
-  \item Sebastian Döhler
+  \item Sebastian Döhler \email{sebastian.doehler@h-da.de} (\href{https://orcid.org/0000-0002-0321-6355}{ORCID})
 }
 
 Other contributors:

@@ -124,19 +124,19 @@ weighting.}
 \item{exact}{single boolean indicating whether to compute the Poisson-Binomial distribution exactly or by normal approximation.}
 }
 \value{
-For ".fast" kernels, a vector of transformed p-values is returned; ".crit"
-kernels return a list object with critical constants (\verb{$crit.consts})
-and transformed p-values (\verb{$pval.transf}).
+For \verb{*_fast} kernels, a vector of transformed p-values is returned; \verb{*_crit}
+kernels return a list object with critical constants (\verb{$crit.consts}) and
+transformed p-values (\verb{$pval.transf}).
 }
 \description{
 Kernel functions transform observed p-values or their support according to
 [HLR], [PB] and [HGR]. The output is used by \code{\link[=discrete.LR]{discrete.LR()}},
 \code{\link[=discrete.PB]{discrete.PB()}} and \code{\link[=discrete.GR]{discrete.GR()}}, respectively.
 For each procedure, there is a kernel for fast computation and one for
-calculation of critical values. Kernels followed by ".crit", e.g.
-\code{kernel.DGR.crit}, compute and return these critical values, while
-kernels ending in ".fast" only transform p-values and are therefore faster.
-The end user should not use these functions directly.
+calculation of critical values. Kernel function names followed by \verb{_crit},
+e.g. \code{kernel_DGR_crit}, compute and return these critical values, while
+kernel functions ending with \verb{_fast} only transform p-values and are
+therefore faster.
 
 \strong{Note}: As of version 2.0, these functions are purely internal functions!
 As a consequence, they have to be called directly via \code{:::}, e.g.
@@ -162,6 +162,7 @@ pCDFlist <- test.results$get_pvalue_supports()
 
 alpha <- 0.05
 
+\dontrun{
 # If not searching for critical constants, we use only the observed p-values
 sorted.pvals <- sort(raw.pvalues)
 y.DLR.fast <- FDX:::kernel_DLR_fast(pCDFlist, sorted.pvals, TRUE)
@@ -180,6 +181,7 @@ y.NDPB.crit$crit.consts
 # transformed values
 y.DGR.crit$pval.transf
 y.NDPB.crit$pval.transf
+}
 
 }
 \seealso{
