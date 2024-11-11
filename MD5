@@ -1,6 +1,6 @@
-0afef44b6e116760e9d216f2f597f4e8 *DESCRIPTION
+714acc9c0e1177d3b310dd37b9055caf *DESCRIPTION
 c5f0cada9be9503d1cf862b330478bd3 *NAMESPACE
-a4e3d1895d08906d7e870f0c18a99415 *NEWS.md
+3ba0f9f6cc7b2eaddcf59e9f0f01d215 *NEWS.md
 15a419e7d7b8c09e5e596a8ddc05bcf3 *R/DGR_fun.R
 b545c128ef0d327f9091a4fa0face8c6 *R/DLR_fun.R
 cd654294ab3ae5ead5326ebab84293dc *R/DPB_fun.R
@@ -8,7 +8,7 @@ cd654294ab3ae5ead5326ebab84293dc *R/DPB_fun.R
 4b666406c234460c63a5f0be67504740 *R/NDGR_fun.R
 e6774a819066ab49cf09f8c057083afe *R/NDLR_fun.R
 61937d5613c1f5332c88ce6f87a6bf51 *R/NDPB_fun.R
-45a47cb1259c596fe1a710f26b8a1054 *R/RcppExports.R
+3a1ca35f272bd51f9dda2b9e38d4879f *R/RcppExports.R
 5825728c21b151463bfbabe044adddef *R/continuousGR.R
 e8b8ec049b7788185f9d502b311a402a *R/continuousLR.R
 56b352e26986d83eee0c41ba04d37f52 *R/discreteGR_fun.R
@@ -19,7 +19,7 @@ e8b8ec049b7788185f9d502b311a402a *R/continuousLR.R
 de08df6bc8ab7e3458b5ee50e3808c15 *R/onUnload.R
 238ef8cca92c5c54f838427fa84f120b *R/plot_funs.R
 65f17ee077faea585e4c70dab8df8043 *R/print_fun.R
-0508d8ddc6a7445e24b20f13042d8d3f *R/summary_funs.R
+1da465b07ed4e39a85bdabe0d54b447c *R/summary_funs.R
 3f3e71ab7ca5ae1ada5d0fd4cd8c908e *R/weightedGR_fun.R
 6c3d3c4dc423df9d62a19779e57bb991 *R/weightedLR_fun.R
 c98a513bd0912f1ed4ead01309bac44e *R/weightedPB_fun.R
@@ -43,7 +43,7 @@ edb77b69b0f9df2ef7bb51874deb9207 *man/discrete.GR.Rd
 ed42e3fbd7cc30bc6ca8fa9b658e24a8 *man/figures/lifecycle-stable.svg
 bf2f1ad432ecccee3400afe533404113 *man/figures/lifecycle-superseded.svg
 65c35b24a99ad968c60568ccf3e7b3f2 *man/hist.FDX.Rd
-edfcd34b191f5c173f003fc1f3062ec3 *man/kernel.Rd
+d172f2d322c913ba855824e5ece072b7 *man/kernel.Rd
 46b038a1e4ed54461e577caaacfea365 *man/match.pvals.Rd
 0127bec8e4b91fde6ee55f980c9ee62a *man/plot.FDX.Rd
 f0a255cd0c8a7c5ed51b0b64596c1a58 *man/print.FDX.Rd
@@ -57,7 +57,7 @@ f0a255cd0c8a7c5ed51b0b64596c1a58 *man/print.FDX.Rd
 327eb78ed173faeac1381960b3147253 *src/dist_fun.h
 a2124e4348ac87aae3a567467b9ef139 *src/helper.cpp
 dac402a7b8c194e31afc576e056b6ccb *src/helper.h
-eb919ff435a6891afa12334e68ac158a *src/kernel.h
+b78aaff59abf0eaebc18e7356fb81488 *src/kernel.h
 5ef8b4b6edbbbabb237126029dc548b5 *src/kernel_DGR.cpp
 946041bf44e2c02d0fc4b50a5e10e065 *src/kernel_DLR.cpp
 c6045c4a477c702c5f015e36a9c3e043 *src/kernel_DPB.cpp
